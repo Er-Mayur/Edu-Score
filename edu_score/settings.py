@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Edu-Score.urls'
+ROOT_URLCONF = 'edu_score.urls'
 
 TEMPLATES = [
     {
@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Edu-Score.wsgi.application'
+WSGI_APPLICATION = 'edu_score.wsgi.application'
 
 
 # Database
