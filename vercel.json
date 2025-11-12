@@ -1,8 +1,8 @@
 {
   "builds": [
-    { "src": "manage.py", "use": "@vercel/python" }
+    { "src": "edu_score/wsgi.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "manage.py" }
+    { "src": "/(.*)", "dest": "edu_score/wsgi.py" }
   ]
 }
