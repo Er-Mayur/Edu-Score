@@ -82,6 +82,7 @@ gruut-lang-en==2.0.1
 gruut-lang-es==2.0.1
 gruut-lang-fr==2.0.2
 gTTS==2.5.4
+gunicorn==23.0.0
 h11==0.16.0
 h5py==3.14.0
 hangul-romanize==0.1.0
