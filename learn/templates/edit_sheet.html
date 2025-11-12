@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% load widget_tweaks %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/utils.css' %}">
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+
+{% endblock %}
+{% block title %}EDIT Sheet{% endblock %}
+
+{% block body %}
+{% if found == 0 %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title text-center display-1 text-danger">404</h1>
+            <h2 class="card-title text-center display-3">Oops!</h2>
+            <h3 class=" text-center display-5 mt-5">Question Sheet is not found!</h3>
+            <h3 class=" text-center display-5 mt-5">Or Un-Authorized</h3>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="container mt-5">
+    <form method="post" >
+        {% csrf_token %}
+        
+        <h1 class="text-center mb-4">EDIT</h1>
+        <h1 class="text-center mb-4">Question Sheet</h1>
+        
+        {% bootstrap_form question_sheet_form %}
+
+        <h2 class="mt-5 text-center">Questions</h2>
+        {{ formset.management_form }}  <!-- Management form required for formset -->
+        
+        <div id="questions">
+
+
+            {% for form in formset %}
+                <div class="question-container border-bottom pb-3 mb-4">
+                    {% for field in form %}
+                        {% if field.name == "DELETE" %}
+                            {% if form.instance.pk %}
+                                <p class="input-group w-fit-content">
+                                    <span class="input-group-text">
+                                        {{ field|add_class:"form-check-input" }}
+                                    </span>
+                                    <label class="form-control px-4">Delete</label>
+                                </p>
+                            {% endif %}
+                        {% else %}
+
+                            {% if field.errors %}
+
+                                {% render_field field|add_class:"is-invalid"|attr:"ariadescribedby:{{ forloop.counter }}Feedback" %}
+                                    
+                                <p id="{{ forloop.counter }}Feedback" class="invalid-feedback">
+                                    {{ field.errors}}
+                                </p>
+                                    
+                            {% else %}
+                                {% comment %} {{ field|add_class:"is-valid" }} {% endcomment %}
+                                {{ field }}
+                            {% endif %}
+
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if not form.instance.pk %}
+                        <button type="button" class="remove-question btn btn-danger float-right">Remove</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div id="additional-questions"></div>
+        </div>
+        <button type="button" id="add-question" class="btn btn-primary mt-4">Add Question</button>
+        <button type="submit" class="btn btn-success mt-4">Submit</button>
+    </form>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<!-- =========== JavaScript  =============== -->
+<script>
+    $(document).ready(function() {
+        var questionIndex = {{ formset.total_form_count }};  // Start from the current number of forms
+
+        // Remove question event handler
+        $(document).on('click', '.remove-question', function() {
+            $(this).closest('.question-container').remove();
+            updateFormIndices();
+        });
+
+        // Add question event handler
+        $('#add-question').click(function() {
+            $.ajax({
+                type: 'GET',
+                url: '{% url 'get_question_form' %}',
+                data: {'index': questionIndex},
+                success: function(data) {
+                    var html = `
+                        <div class="question-container border-bottom pb-3 mb-4">
+                            ${data.html.replace(/__prefix__/g, questionIndex)}  <!-- Replace prefix -->
+                            <button type="button" class="remove-question btn btn-danger float-right">Remove</button>
+                        </div>
+                    `;
+                    $('#additional-questions').append(html);
+                    questionIndex++;
+                    updateFormIndices();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error adding new question:", xhr.responseText);
+                }
+            });
+        });
+
+        // Update form indices and form-TOTAL_FORMS hidden input
+        function updateFormIndices() {
+            var totalForms = 0;
+            $('.question-container').each(function(index, element) {
+                $(element).find(':input').each(function() {
+                    var name = $(this).attr('name');
+                    if (name) {
+                        var newName = name.replace(/form-\d+-/, 'form-' + totalForms + '-');
+                        $(this).attr('name', newName);
+                        $(this).attr('id', 'id_' + newName);
+                    }
+                });
+                totalForms++;
+            });
+            $('#id_form-TOTAL_FORMS').val(totalForms);  // Update form-TOTAL_FORMS hidden input
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}Edu-Score{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-md-6 text-center">
+                <h1 class="display-4">Welcome to Digital Ilm</h1>
+                <h2 class="lead">Learn and Teach with Ease</h2>
+                <p class="mt-3">
+                    Digital Ilm is a platform for quick, no-hassle quiz creation and participation. Tutors can create multiple-choice question sheets, and students can attempt them without needing to log in. Perfect for classrooms, quick tests, and self-assessment!
+                </p>
+                <div class="mt-4 gap-3 d-flex flex-wrap justify-content-center ">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'create_question_sheet' %}" class="btn btn-primary btn-lg">Create Sheets</a>
+                        <a href="{% url 'explore-quizzes' %}" class="btn btn-success btn-lg">Browse Questions</a>
+                    {% else %}
+                        <a href="{% url 'explore-quizzes' %}" class="btn btn-primary btn-lg">Browse Questions</a>
+                        <a href="{% url 'register' %}" class="btn btn-success btn-lg">Become a Tutor</a>
+                    {% endif %}  
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

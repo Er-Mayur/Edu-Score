@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}Confirm Log out{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="card shadow-lg p-3 mb-5 rounded">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Logged Out</h2>
+            </div>
+            
+            <div class="card-body">
+                <p class="display-4 mb-5">Do you really want to log out?</p>
+                <div class="card-body flex-wrap" 
+                style="
+                display: flex;
+                align-items: center;
+                gap: 20px
+                ">
+                    <a href="{% url 'home' %}" class="btn btn-success btn-lg">Cancel</a>
+                    <form action="{% url 'logout' %}" method="POST">
+                        {% csrf_token %}
+                        <button class="btn btn-danger btn-lg" type="submit">Log Out</button>
+                    </form>
+                </div>                    
+            </div>
+        </div>
+    </div>
+{% endblock %}
