@@ -1,0 +1,123 @@
+{% extends 'assessment/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h3 class="mb-3">Assessment in Progress</h3>
+            <div id="timer" class="alert alert-warning text-center fw-bold">Time Left: <span id="time-display">--:--</span></div>
+            
+            <form id="quiz-form" method="POST" action="{% url 'submit_test' %}">
+                {% csrf_token %}
+                {% for question in questions %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Q{{ forloop.counter }}: {{ question.question_text }}</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q_{{ question.question_id }}" id="q_{{ question.question_id }}_A" value="A" onchange="saveAnswer('{{ question.question_id }}', 'A')" {% if question.selected_option == 'A' %}checked{% endif %}>
+                            <label class="form-check-label" for="q_{{ question.question_id }}_A">{{ question.option_a }}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q_{{ question.question_id }}" id="q_{{ question.question_id }}_B" value="B" onchange="saveAnswer('{{ question.question_id }}', 'B')" {% if question.selected_option == 'B' %}checked{% endif %}>
+                            <label class="form-check-label" for="q_{{ question.question_id }}_B">{{ question.option_b }}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q_{{ question.question_id }}" id="q_{{ question.question_id }}_C" value="C" onchange="saveAnswer('{{ question.question_id }}', 'C')" {% if question.selected_option == 'C' %}checked{% endif %}>
+                            <label class="form-check-label" for="q_{{ question.question_id }}_C">{{ question.option_c }}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q_{{ question.question_id }}" id="q_{{ question.question_id }}_D" value="D" onchange="saveAnswer('{{ question.question_id }}', 'D')" {% if question.selected_option == 'D' %}checked{% endif %}>
+                            <label class="form-check-label" for="q_{{ question.question_id }}_D">{{ question.option_d }}</label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-success w-100">Submit Test</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Timer Logic with strict end time
+    const startTimeStr = "{{ start_time|escapejs }}"; 
+    const durationMinutes = Number("{{ duration|default_if_none:60 }}");
+    const assessmentEndTimeStr = "{{ end_time|default:''|escapejs }}";
+
+    // Calculate effective end time
+    // Test end = Start + Duration
+    // Absolute limit = Assessment End Time
+    
+    let now = new Date().getTime();
+    let startTime = startTimeStr ? new Date(startTimeStr).getTime() : now;
+    let testEndTime = startTime + (durationMinutes * 60 * 1000);
+    
+    // If assessmentEndTimeStr is present, parse it
+    // Django provides ISO format usually, readable by JS
+    if (assessmentEndTimeStr && assessmentEndTimeStr !== 'None') {
+        let absoluteEnd = new Date(assessmentEndTimeStr).getTime();
+        if (absoluteEnd < testEndTime) {
+            testEndTime = absoluteEnd;
+        }
+    }
+    
+    function updateTimer() {
+        const now = new Date().getTime();
+        const distance = testEndTime - now;
+        
+        if (distance < 0) {
+            document.getElementById("time-display").innerText = "EXPIRED";
+            document.getElementById("quiz-form").submit();
+            return;
+        }
+        
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById("time-display").innerText = minutes + "m " + seconds + "s ";
+    }
+    
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    // Save Answer Logic
+    function saveAnswer(qId, selectedOpt) {
+        fetch("{% url 'save_answer' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                question_id: qId,
+                selected_option: selectedOpt
+            })
+        }).then(res => {
+            if(!res.ok) console.error("Failed to save answer");
+        }).catch(err => console.error(err));
+    }
+
+    // Proctoring: Tab Switch / Visibility Change
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+            fetch("{% url 'log_warning' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (data.count >= 3) {
+                        alert("You have exceeded the maximum number of warnings (3). Your test is being submitted automatically.");
+                        document.getElementById("quiz-form").submit();
+                    } else {
+                        alert("WARNING (" + data.count + "/3): Tab switching is monitored. Do not leave this page.");
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+        }
+    });
+</script>
+{% endblock %}

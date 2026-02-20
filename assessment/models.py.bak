@@ -1,0 +1,53 @@
+from django.db import models
+import uuid
+
+class Assessment(models.Model):
+    domain = models.CharField(max_length=100)
+    test_code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    number_of_questions = models.IntegerField()
+    duration_minutes = models.IntegerField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    cutoff_score = models.IntegerField()
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.domain} - {self.test_code}"
+
+class Attempt(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Qualified', 'Qualified'),
+        ('Rejected', 'Rejected')
+    ]
+
+    candidate_email = models.EmailField()
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
+    start_time = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(null=True, blank=True) # Null if not submitted yet
+    score = models.IntegerField(default=0)
+    percentage = models.FloatField(default=0.0)
+    warning_count = models.IntegerField(default=0)
+    result_status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='Pending'
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('candidate_email', 'assessment')
+
+    def __str__(self):
+        return f"{self.candidate_email} - {self.assessment.test_code}"
+
+class AuditLog(models.Model):
+    user = models.CharField(max_length=150)  # Using CharField to store username or email
+    action = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    details = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.action} at {self.timestamp}"

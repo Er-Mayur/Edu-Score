@@ -1,0 +1,20 @@
+{% extends 'assessment/base.html' %}
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="card p-5">
+        <h2 class="mb-4">Assessment Result</h2>
+        <div class="display-4 mb-3">{{ attempt.score }} </div>
+        <div class="h3 mb-3">{{ attempt.percentage }}%</div>
+        {% if attempt.result_status|lower == 'qualified' %}
+            <div class="alert alert-success fw-bold">
+                Status: {{ attempt.result_status }}
+            </div>
+        {% else %}
+            <div class="alert alert-danger fw-bold">
+                Status: {{ attempt.result_status }}
+            </div>
+        {% endif %}
+        <a href="{% url 'candidate_login' %}" class="btn btn-primary mt-3">Back to Login</a>
+    </div>
+</div>
+{% endblock %}

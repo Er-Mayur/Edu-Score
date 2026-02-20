@@ -1,0 +1,13 @@
+{% extends 'assessment/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 card p-4">
+        <h3>Create New Assessment</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success mt-3">Create Assessment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

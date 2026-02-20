@@ -1,0 +1,17 @@
+{% extends 'assessment/base.html' %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>Welcome, {{ candidate_name }}</h2>
+    <div class="card p-4 mt-3">
+        <h4>{{ assessment.domain }} Assessment</h4>
+        <p>Questions: {{ assessment.number_of_questions }} | Duration: {{ assessment.duration_minutes }} mins</p>
+        <div class="alert alert-info">
+            Ensure you have stable internet. Do not refresh the page during the test.
+        </div>
+        <form method="post" action="{% url 'initialize_test' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-lg btn-success">Start Test</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
