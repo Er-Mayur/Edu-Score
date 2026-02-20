@@ -95,7 +95,7 @@ edu_score/
 
 ### 1️⃣ Clone Repository
 ```bash
-git clone https://github.com/yourusername/eduscore.git
+git clone [https://github.com/yourusername/eduscore.git](https://github.com/Er-Mayur/Edu-Score.git)
 cd eduscore
 ```
 
