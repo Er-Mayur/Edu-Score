@@ -194,6 +194,3 @@ The system requires 3 separate Google Sheet IDs configured in the Apps Script:
 
 ## 👨‍💻 Author
 Built as an internal company-grade assessment engine for internship shortlisting.
-
-## 📄 License
-Internal use only.
